@@ -21,13 +21,13 @@ https://discord.com/oauth2/authorize?permissions=8&scope=bot&client_id=CLIENT_ID
 
 `config.py` - 실행할 봇 TOKEN 기입하는 곳
 
-`command.py` - 봇 명령어 설정하는 곳
+`bot_base/command.py` - 봇 명령어 설정하는 곳
+
+`bot_base/event.py` - 봇 이벤트 설정하는 곳
 
 `persona/__init__.py` - 봇의 페르소나 적용하는 곳
 
 `persona/*.py` - 봇의 페르소나들
-
-`utils.py` - 필요 시 이용할 만한 함수들
 
 ---
 
