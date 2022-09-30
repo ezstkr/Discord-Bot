@@ -7,7 +7,7 @@ except:
     pass
 
 from bot_base.command import bot
-from persona import persona
+from persona import use_persona
 
 
 KST = datetime.timezone(datetime.timedelta(hours=9)) # UTC+9 대한민국 (KST)
@@ -39,7 +39,7 @@ async def on_message(message: discord.message.Message):
     if message.content.startswith(bot.command_prefix):
         await bot.process_commands(message)
     else:
-        await persona.use(message)
+        await use_persona(message)
 
     print('------')
     bot.is_on_message_running = False

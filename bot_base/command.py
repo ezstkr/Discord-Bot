@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands.context import Context
 
-from persona import persona
+from persona.last_chat_reminder import remind_last_chat
 
 
 intents = discord.Intents.default()
@@ -34,4 +34,4 @@ async def lastchat(ctx: Context, member: str = None):
     if member is None:
         await ctx.message.reply('```!마지막채팅 [유저이름]```')
     else:
-        await persona.LastChatReminder.check(ctx.message, member)
+        await remind_last_chat(ctx.message, member)
