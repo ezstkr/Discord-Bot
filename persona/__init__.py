@@ -11,9 +11,8 @@ from persona.pingpong import pingpong
 # 페르소나 적용하는 곳 (위에서부터 하나씩 실행됨)
 # 페르소나 함수 규칙: 메세지 보내면 return True
 personas = [ 
-    gwansimbeop,
-    ddorai,
-    gif_villain,
+    pingpong,
+    copycat,
 ]
 
 async def use_persona(message: discord.message.Message):
