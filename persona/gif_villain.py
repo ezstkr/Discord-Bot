@@ -16,6 +16,10 @@ async def gif_villain(message: discord.message.Message, top_n=5):
     channel = message.channel # 메세지 보낸 채널
 
     query = quote_plus(content)
+
+    if 'http' in query:
+        return False
+        
     url = f'https://tenor.com/search/{query}-gifs'
         
     soup = get_html_soup(url)
