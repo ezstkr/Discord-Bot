@@ -1,6 +1,7 @@
 import discord
 
 from persona.copycat import copycat
+from persona.continuation import continuation
 from persona.gif_villain import gif_villain
 from persona.gungye import gwansimbeop
 from persona.last_chat_reminder import save_last_chat
