@@ -3,6 +3,7 @@ import random
 import discord
 from discord.ext import commands
 from discord.ext.commands.context import Context
+import googletrans
 
 from persona.last_chat_reminder import remind_last_chat
 
@@ -35,3 +36,25 @@ async def lastchat(ctx: Context, member: str = None):
         await ctx.message.reply('```!마지막채팅 [유저이름]```')
     else:
         await remind_last_chat(ctx.message, member)
+
+
+@bot.command(name="번역")
+async def translate(ctx: Context, arg1: str = None, arg2: str = None):
+    if arg1 is None and arg2 is None:
+        await ctx.message.reply('```!번역 [언어: en, ko, ja, fr] [텍스트]```')
+    elif arg2 is None:
+        lang, text = 'en', arg2
+    else:
+        lang, text = arg1, arg2
+
+    try:
+        translator = googletrans.Translator()
+        result = translator.translate(text, dest=lang).text
+
+        await ctx.message.reply(f"{text} => {result}")
+
+    except ValueError as e:
+        await ctx.message.reply('```!번역 [언어: en, ko, ja, fr] [텍스트]```')
+
+    except Exception as e:
+        print(repr(e))
