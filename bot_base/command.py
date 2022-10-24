@@ -38,14 +38,21 @@ async def lastchat(ctx: Context, member: str = None):
         await remind_last_chat(ctx.message, member)
 
 
-@bot.command(name="번역")
-async def translate(ctx: Context, arg1: str = None, arg2: str = None):
-    if arg1 is None and arg2 is None:
-        await ctx.message.reply('```!번역 [언어: en, ko, ja, fr] [텍스트]```')
-    elif arg2 is None:
-        lang, text = 'en', arg2
+@bot.command(aliases=['번역', 'translate'])
+async def _translate(ctx: Context, *args):
+    embed = discord.Embed(
+        title='언어 코드 종류',
+        url='https://developers.google.com/admin-sdk/directory/v1/languages/',
+        description='Languages Codes'
+    )
+    help = '```!번역 [언어 코드] [텍스트]```'
+
+    if len(args) == 0:
+        await ctx.message.reply(help, embed=embed)
+    elif len(args) == 1:
+        lang, text = 'en', args[0]
     else:
-        lang, text = arg1, arg2
+        lang, text = args[0], args[1]
 
     try:
         translator = googletrans.Translator()
@@ -54,7 +61,7 @@ async def translate(ctx: Context, arg1: str = None, arg2: str = None):
         await ctx.message.reply(f"{text} => {result}")
 
     except ValueError as e:
-        await ctx.message.reply('```!번역 [언어: en, ko, ja, fr] [텍스트]```')
+        await ctx.message.reply(help, embed=embed)
 
     except Exception as e:
         print(repr(e))
