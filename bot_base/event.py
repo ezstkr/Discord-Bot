@@ -36,10 +36,13 @@ async def on_message(message: discord.message.Message):
     print(f'{now}, {message.guild} - {message.channel}') # 메세지 올라온 시각 / 서버 / 채널
     print(author, message.content, sep=': ') # 메세지 친 사람 / 메세지 내용
     
-    if message.content.startswith(bot.command_prefix):
-        await bot.process_commands(message)
-    else:
-        await use_persona(message)
+    try:
+        if message.content.startswith(bot.command_prefix):
+            await bot.process_commands(message)
+        else:
+            await use_persona(message)
+    except Exception as e:
+        print(e)
 
     print('------')
     bot.is_on_message_running = False
