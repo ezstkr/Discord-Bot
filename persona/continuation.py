@@ -5,7 +5,7 @@ from urllib.error import HTTPError
 from bs4 import BeautifulSoup as bs
 import random
 
-from utils.unicode import check_hangul, is_hangul_compat_jamo
+from utils.unicode import check_hangul, is_hangul_compat_jamo, split_syllable_char, join_jamos_char
 
 
 last_char_dict = {}
@@ -36,22 +36,29 @@ async def continuation(message: discord.message.Message):
     word_exists = _word_exists(content)
     is_continue_word = last_char is None or last_char == content[0]
 
+    if not is_continue_word:
+        last_char_secondary = _get_last_char_secondary(last_char)
+        is_continue_word = last_char_secondary == content[0] 
+
     if not is_continue_word or not word_exists:
         if not word_exists:
             await message.reply('그런 단어는 없다!')
         elif not is_continue_word:
-            await message.reply(f"'{last_char}'(으)로 시작하는 말이 아니다!")
+            secondary_info = f'({last_char_secondary})' if last_char_secondary is not None else ''
+            await message.reply(f"'{last_char}{secondary_info}'(으)로 시작하는 말이 아니다!")
         
         await channel.send('내가 이겼다')
 
         last_char = None
     else:
         words = _search_answer_words(content)
-        word = random.choice(words)
 
-        if word is not None:
+        if len(words) > 0:
+            word = random.choice(words)
             last_char = word[-1]
-            await message.reply(word)
+            last_char_secondary = _get_last_char_secondary(last_char)
+            secondary_info = f'({last_char_secondary})' if last_char_secondary is not None else ''
+            await message.reply(word + secondary_info)
         else:
             last_char = None
             await channel.send('내가 졌다')
@@ -61,7 +68,7 @@ async def continuation(message: discord.message.Message):
     return True
 
 
-def _word_exists(content): # TODO: 두음 법칙 인정
+def _word_exists(content):
     url = f"https://kkukowiki.kr/&search={quote_plus(content)}&fulltext=1"
     soup = get_html_soup(url)
     result = soup.find('ul', 'mw-search-results')
@@ -80,22 +87,42 @@ def _word_exists(content): # TODO: 두음 법칙 인정
     return True
 
 
-def _search_answer_words(content):
-    url_subfix = content[-1]
-    url = f"https://kkukowiki.kr/w/{quote_plus(f'역대_단어/한국어/{url_subfix}', safe='/')}"
+def _get_last_char_secondary(last_char):
+    (initial, medial, final) = split_syllable_char(last_char)
+
+    if initial in 'ㄴㄹ' and medial in 'ㅑㅕㅖㅛㅠㅣ':
+        return join_jamos_char('ㅇ', medial, final)
+    elif initial in 'ㄹ' and medial in 'ㅏㅐㅗㅚㅜㅡ':
+        return join_jamos_char('ㄴ', medial, final)
+
+
+def _search_answer_words(content, is_secondary_search=False):
+    last_char = content[-1]
+    url = f"https://kkukowiki.kr/w/{quote_plus(f'역대_단어/한국어/{last_char}', safe='/')}"
+
+    def _search_secondary_answer_words():
+        if is_secondary_search:
+            return []
+        else:
+            last_char_secondary = _get_last_char_secondary(last_char)
+            if last_char_secondary is None:
+                return [] 
+            else:
+                return _search_answer_words(last_char_secondary, is_secondary_search=True)
 
     try:
         soup = get_html_soup(url)
     except HTTPError as e:
         if not e.status == 404:
             raise
-        return None
+        return _search_secondary_answer_words()
 
     tr_tags = soup.find('table', 'sortable').find_all('tr')
 
     if len(tr_tags) < 3:
-        return None
+        return _search_secondary_answer_words()
 
     words = [list(tr_tag.children)[-1].text.strip() for tr_tag in tr_tags[2:]]
+    words = words + _search_secondary_answer_words()
 
     return words
